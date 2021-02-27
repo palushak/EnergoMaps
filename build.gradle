@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        flatDir dirs: '/proguard6.1.1/lib'
+    }
+    dependencies {
+        classpath 'edu.sc.seis.gradle:launch4j:2.4.6'
+        classpath ':proguard:'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'edu.sc.seis.launch4j'
+
+group 'palsoft.eu'
+mainClassName = 'EnergoMaps'
+version = "1.0.0"
+sourceCompatibility = 1.9
+
+dependencies {
+    compile group: 'com.jfoenix', name: 'jfoenix', version: '9.0.9'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.7'
+//    compile group: 'org.kordamp.bootstrapfx', name: 'bootstrapfx-core', version: '0.2.4'
+}
+
+launch4j {
+//    headerType="console"
+    bundledJrePath = "jre"
+    bundledJre64Bit = true
+    jreRuntimeBits = "64"
+    jreMinVersion = 1.9
+    initialHeapSize = 4096
+    maxHeapSize = 8192
+    outfile = "EnergoMaps.exe"
+    mainClassName = "EnergoMaps"
+    icon = "${projectDir}/icon/dc.ico"
+    productName = "EnergoMaps"
+    version = "1.0.0"
+    copyright = "j.paluszak@pwsz.elblag.pl"
+}
+
+task myProguardTask(type: proguard.gradle.ProGuardTask) {
+    configuration 'proguard.conf'
+
+    configurations.runtime.resolve().each {
+        libraryjars file(it.getAbsolutePath())
+    }
+
+    injars '/build/libs/energoMaps-1.0.0.jar'
+    outjars '/build/launch4j/lib/energoMaps-1.0.0.jar'
+}

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXDialog?>
+<?import com.jfoenix.controls.JFXDialogLayout?>
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import com.jfoenix.controls.JFXSlider?>
+<?import com.jfoenix.controls.JFXSpinner?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="stackPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="EnergoMapsController">
+   <children>
+      <AnchorPane stylesheets="@../css/styles.css">
+         <children>
+             <JFXDialog fx:id="infoDialog">
+                 <JFXDialogLayout>
+                     <heading>
+                         <Label fx:id="infoHeader">Header</Label>
+                     </heading>
+                     <body>
+                         <Label fx:id="infoBody">Body</Label>
+                     </body>
+                     <actions>
+                         <JFXButton fx:id="infoButtonAccept" styleClass="dialog-accept">   OK
+                         </JFXButton>
+                     </actions>
+                 </JFXDialogLayout>
+             </JFXDialog>
+            <BorderPane accessibleText="Path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <left>
+                  <StackPane BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox>
+                           <children>
+                              <GridPane alignment="CENTER_LEFT">
+                                <columnConstraints>
+                                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
+                                  <ColumnConstraints hgrow="ALWAYS" />
+                                    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="229.0" minWidth="74.0" prefWidth="121.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
+                                  <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints vgrow="SOMETIMES" />
+                                    <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
+                                  <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
+                                  <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
+                                    <RowConstraints vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <Label styleClass="info-label" text="Ilość punktów:" GridPane.rowIndex="3" />
+                                    <Label fx:id="pointsCountLabel" styleClass="info-label" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label styleClass="info-label" text="Ilość punktów na 1 plik:" GridPane.rowIndex="6" />
+                                    <HBox GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                       <GridPane.margin>
+                                          <Insets left="12.0" right="12.0" />
+                                       </GridPane.margin>
+                                       <children>
+                                          <JFXTextField fx:id="pointsPerFileTextField" />
+                                       </children>
+                                    </HBox>
+                                    <Label styleClass="info-label" text="Ilość plików:" GridPane.rowIndex="7" />
+                                    <JFXTextArea fx:id="fileNames" editable="false" labelFloat="true" prefHeight="10.0" prefWidth="300.0" wrapText="true" GridPane.columnIndex="1">
+                                       <GridPane.margin>
+                                          <Insets left="12.0" />
+                                       </GridPane.margin>
+                                    </JFXTextArea>
+                                    <JFXButton fx:id="pathButton" buttonType="RAISED" onAction="#handlePathButtonAction" styleClass="custom-jfx-button-raised" text="Wybierz pliki XYZ" />
+                                    <StackPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <children>
+                                          <JFXSpinner fx:id="filesSpinner" StackPane.alignment="CENTER" />
+                                       </children>
+                                    </StackPane>
+                                    <JFXTextField fx:id="filesCountTextField" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                       <GridPane.margin>
+                                          <Insets left="12.0" right="12.0" />
+                                       </GridPane.margin>
+                                    </JFXTextField>
+                                    <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                       <children>
+                                          <JFXSlider fx:id="densitySlider" styleClass="jfx-slider-colored" />
+                                       </children>
+                                       <padding>
+                                          <Insets left="12.0" />
+                                       </padding>
+                                    </HBox>
+                                    <Label styleClass="info-label" text="zagęszczenie:" GridPane.rowIndex="4">
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                    </Label>
+                                    <Label styleClass="info-label" text="Ilość punktów do eksportu:" GridPane.rowIndex="5" />
+                                    <Label fx:id="pointsExportCountLabel" styleClass="info-label" text="0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                                       <children>
+                                          <Label fx:id="sliderValueLabel" styleClass="info-label" text="0 %" StackPane.alignment="CENTER_LEFT" />
+                                       </children>
+                                    </StackPane>
+                                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="6">
+                                       <children>
+                                          <Label fx:id="bytesLabel" styleClass="info-label" text="0 Bytes" StackPane.alignment="CENTER_LEFT" />
+                                       </children>
+                                    </StackPane>
+                                 </children>
+                              </GridPane>
+                              <VBox alignment="CENTER_LEFT" spacing="20.0">
+                                 <children>
+                                    <HBox spacing="30.0">
+                                       <children>
+                                          <Label fx:id="percentLabel" styleClass="info-label" />
+                                          <Label fx:id="workLabel" styleClass="info-label" />
+                                          <JFXSpinner fx:id="taskSpinner" prefWidth="30.0" />
+                                       </children>
+                                    </HBox>
+                                    <JFXProgressBar fx:id="progressBar" />
+                                    <HBox spacing="20.0">
+                                       <children>
+                                          <JFXButton fx:id="convertButton" buttonType="RAISED" onAction="#handleConvertButtonAction" styleClass="custom-jfx-button-raised" text="Konwersja do plików PCD" />
+                                          <JFXButton fx:id="openFolderButton" buttonType="RAISED" onAction="#handleOpenFolderButtonAction" styleClass="custom-jfx-button-raised" text="Otwórz w folderze" />
+                                          <JFXButton fx:id="stopButton" buttonType="RAISED" onAction="#handleStopButtonAction" styleClass="custom-jfx-button-raised" text="Zatrzymaj" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets top="30.0" />
+                                 </VBox.margin>
+                              </VBox>
+                           </children>
+                           <StackPane.margin>
+                              <Insets left="60.0" />
+                           </StackPane.margin>
+                        </VBox>
+                     </children>
+                  </StackPane>
+               </left>
+               <center>
+                  <StackPane visible="false" BorderPane.alignment="TOP_CENTER">
+                     <BorderPane.margin>
+                        <Insets />
+                     </BorderPane.margin>
+                     <children>
+                        <VBox>
+                           <children>
+                              <TitledPane alignment="CENTER" animated="false" collapsible="false" contentDisplay="CENTER">
+                                <content>
+                                  <AnchorPane>
+                                       <children>
+                                          <Canvas AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                                </content>
+                              </TitledPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </StackPane>
+               </center>
+               <top>
+                  <StackPane prefHeight="100.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Label alignment="CENTER" styleClass="jfx-text-title" text="Maps Converter" textAlignment="CENTER" />
+                     </children>
+                  </StackPane>
+               </top>
+               <bottom>
+                  <VBox alignment="BOTTOM_RIGHT" nodeOrientation="LEFT_TO_RIGHT" opacity="0.5" spacing="5.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <HBox alignment="CENTER_RIGHT" spacing="20.0">
+                           <children>
+                              <Label text="Dostępna pamięć:" />
+                              <Label fx:id="heapSizeLabel" text="0" />
+                           </children>
+                           <VBox.margin>
+                              <Insets top="10.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="20.0">
+                           <children>
+                              <Label text="Maksymalna pamięć:" />
+                              <Label fx:id="maxHeapSizeLabel" text="0" />
+                           </children>
+                        </HBox>
+                        <Label text="Copyright © palsoft">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </Label>
+                        <Label text="wersja 1.0.0" />
+                     </children>
+                  </VBox>
+               </bottom>
+            </BorderPane>
+         </children>
+      </AnchorPane>
+   </children>
+</StackPane>
