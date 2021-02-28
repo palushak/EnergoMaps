@@ -15,12 +15,10 @@ public class Marker {
     @SerializedName("geometry")
     @Expose
     private Geometry geometry;
-    @SerializedName("id")
+    @SerializedName("id_punktu")
     @Expose
-    private String id;
-    @SerializedName("idPaczki")
-    @Expose
-    private String idPaczki;
+    private String id_punktu;
+
 
     /**
      * No args constructor for use in serialization
@@ -30,20 +28,19 @@ public class Marker {
     }
 
     /**
-     * 
-     * @param id
-     * @param idPaczki
-     * @param properties
      * @param type
+     * @param id_punktu
+     * @param properties
      * @param geometry
      */
-    public Marker(String type, Properties properties, Geometry geometry, String id, String idPaczki) {
+
+    public Marker(String type, Properties properties, Geometry geometry, String id_punktu) {
         super();
         this.type = type;
+        this.id_punktu = id_punktu;
         this.properties = properties;
         this.geometry = geometry;
-        this.id = id;
-        this.idPaczki = idPaczki;
+
     }
 
     public String getType() {
@@ -70,20 +67,11 @@ public class Marker {
         this.geometry = geometry;
     }
 
-    public String getId() {
-        return id;
+    public String getId_punktu() {
+        return id_punktu;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId_punktu(String id_punktu) {
+        this.id_punktu = id_punktu;
     }
-
-	public String getIdPaczki() {
-		return idPaczki;
-	}
-
-	public void setIdPaczki(String idPaczki) {
-		this.idPaczki = idPaczki;
-	}
-
 }

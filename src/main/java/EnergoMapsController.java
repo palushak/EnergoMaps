@@ -180,8 +180,8 @@ public class EnergoMapsController implements Initializable {
 
                 exportService = new ExportService();
                 exportService.setFile(file);
-                exportService.setPointsCount(pointsCount);
-
+//                exportService.setPointsCount(pointsCount);
+                exportService.setMax(pointsCount+pointsCount);
                 exportService.setOnSucceeded((WorkerStateEvent t) -> {
                     stopButton.setVisible(false);
                     openFolderButton.setVisible(true);

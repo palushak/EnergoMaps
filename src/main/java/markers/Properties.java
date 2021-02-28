@@ -26,7 +26,9 @@ public class Properties {
     @SerializedName("numerDomu")
     @Expose
     private String numerDomu;
-
+    @SerializedName("iloscOdczytow")
+    @Expose
+    private Integer iloscOdczytow;
 
     /**
      * No args constructor for use in serialization
@@ -103,4 +105,11 @@ public class Properties {
     }
 
 
+    public Integer getIloscOdczytow() {
+        return iloscOdczytow;
+    }
+
+    public void setIloscOdczytow(Integer iloscOdczytow) {
+        this.iloscOdczytow = iloscOdczytow;
+    }
 }
