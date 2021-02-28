@@ -23,6 +23,14 @@ dependencies {
     compile group: 'com.jfoenix', name: 'jfoenix', version: '9.0.9'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.7'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    compile group: 'de.micromata.jak', name: 'JavaAPIforKml', version: '2.2.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    compile group: 'javax.xml.soap', name: 'javax.xml.soap-api', version: '1.4.0'
+    compile group: 'com.google.maps', name: 'google-maps-services', version: '0.17.0'
+    compile group: 'com.google.http-client', name: 'google-http-client', version: '1.39.0'
+    compile group: 'com.google.http-client', name: 'google-http-client-jackson2', version: '1.39.0'
 //    compile group: 'org.kordamp.bootstrapfx', name: 'bootstrapfx-core', version: '0.2.4'
 }
 
