@@ -26,7 +26,7 @@ public class EnergoMaps extends Application {
         try {
             Rectangle2D bounds = Screen.getScreens().get(0).getBounds();
             width = bounds.getWidth() / 2.3;
-            height = bounds.getHeight() / 1.2;
+            height = bounds.getHeight() / 1.4;
         } catch (Exception e) {
         }
 
@@ -34,7 +34,7 @@ public class EnergoMaps extends Application {
         decorator.setCustomMaximize(true);
         Scene scene = new Scene(decorator, width, height);
         scene.getStylesheets().add(EnergoMaps.class.getResource("/css/styles.css").toExternalForm());
-        primaryStage.getIcons().add(new Image(this.getClass().getResourceAsStream("/icon/dc.png")));
+        primaryStage.getIcons().add(new Image(this.getClass().getResourceAsStream("/icon/icon.png")));
         primaryStage.setTitle("");
         primaryStage.setScene(scene);
         primaryStage.show();

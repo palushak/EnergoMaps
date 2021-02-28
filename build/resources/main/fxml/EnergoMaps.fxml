@@ -4,10 +4,8 @@
 <?import com.jfoenix.controls.JFXDialog?>
 <?import com.jfoenix.controls.JFXDialogLayout?>
 <?import com.jfoenix.controls.JFXProgressBar?>
-<?import com.jfoenix.controls.JFXSlider?>
 <?import com.jfoenix.controls.JFXSpinner?>
 <?import com.jfoenix.controls.JFXTextArea?>
-<?import com.jfoenix.controls.JFXTextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Label?>
@@ -20,8 +18,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<StackPane fx:id="stackPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="EnergoMapsController">
+<StackPane fx:id="stackPane" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="EnergoMapsController">
    <children>
       <AnchorPane stylesheets="@../css/styles.css">
          <children>
@@ -60,68 +59,37 @@
                                     <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="ALWAYS" />
                                   <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
                                     <RowConstraints vgrow="SOMETIMES" />
-                                    <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
-                                  <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
-                                  <RowConstraints fillHeight="false" valignment="CENTER" vgrow="ALWAYS" />
                                     <RowConstraints vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <Label styleClass="info-label" text="Ilość punktów:" GridPane.rowIndex="3" />
-                                    <Label fx:id="pointsCountLabel" styleClass="info-label" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label styleClass="info-label" text="Ilość punktów na 1 plik:" GridPane.rowIndex="6" />
-                                    <HBox GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                       <GridPane.margin>
-                                          <Insets left="12.0" right="12.0" />
-                                       </GridPane.margin>
-                                       <children>
-                                          <JFXTextField fx:id="pointsPerFileTextField" />
-                                       </children>
-                                    </HBox>
-                                    <Label styleClass="info-label" text="Ilość plików:" GridPane.rowIndex="7" />
+                                    <Label styleClass="info-label" text="Ilość punktów w pliku:" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font></Label>
+                                    <Label fx:id="pointsCountLabel" styleClass="info-label" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font></Label>
                                     <JFXTextArea fx:id="fileNames" editable="false" labelFloat="true" prefHeight="10.0" prefWidth="300.0" wrapText="true" GridPane.columnIndex="1">
                                        <GridPane.margin>
                                           <Insets left="12.0" />
                                        </GridPane.margin>
                                     </JFXTextArea>
-                                    <JFXButton fx:id="pathButton" buttonType="RAISED" onAction="#handlePathButtonAction" styleClass="custom-jfx-button-raised" text="Wybierz pliki XYZ" />
+                                    <JFXButton fx:id="pathButton" buttonType="RAISED" onAction="#handlePathButtonAction" styleClass="custom-jfx-button-raised" text="Wybierz plik CSV" />
                                     <StackPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <children>
                                           <JFXSpinner fx:id="filesSpinner" StackPane.alignment="CENTER" />
                                        </children>
                                     </StackPane>
-                                    <JFXTextField fx:id="filesCountTextField" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                                       <GridPane.margin>
-                                          <Insets left="12.0" right="12.0" />
-                                       </GridPane.margin>
-                                    </JFXTextField>
                                     <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <GridPane.margin>
                                           <Insets />
                                        </GridPane.margin>
-                                       <children>
-                                          <JFXSlider fx:id="densitySlider" styleClass="jfx-slider-colored" />
-                                       </children>
                                        <padding>
                                           <Insets left="12.0" />
                                        </padding>
                                     </HBox>
-                                    <Label styleClass="info-label" text="zagęszczenie:" GridPane.rowIndex="4">
-                                       <GridPane.margin>
-                                          <Insets />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <Label styleClass="info-label" text="Ilość punktów do eksportu:" GridPane.rowIndex="5" />
-                                    <Label fx:id="pointsExportCountLabel" styleClass="info-label" text="0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="4">
-                                       <children>
-                                          <Label fx:id="sliderValueLabel" styleClass="info-label" text="0 %" StackPane.alignment="CENTER_LEFT" />
-                                       </children>
-                                    </StackPane>
-                                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="6">
-                                       <children>
-                                          <Label fx:id="bytesLabel" styleClass="info-label" text="0 Bytes" StackPane.alignment="CENTER_LEFT" />
-                                       </children>
-                                    </StackPane>
+                                    <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="4" />
                                  </children>
                               </GridPane>
                               <VBox alignment="CENTER_LEFT" spacing="20.0">
@@ -136,7 +104,7 @@
                                     <JFXProgressBar fx:id="progressBar" />
                                     <HBox spacing="20.0">
                                        <children>
-                                          <JFXButton fx:id="convertButton" buttonType="RAISED" onAction="#handleConvertButtonAction" styleClass="custom-jfx-button-raised" text="Konwersja do plików PCD" />
+                                          <JFXButton fx:id="convertButton" buttonType="RAISED" onAction="#handleConvertButtonAction" styleClass="custom-jfx-button-raised" text="Konwersja do plików KML" />
                                           <JFXButton fx:id="openFolderButton" buttonType="RAISED" onAction="#handleOpenFolderButtonAction" styleClass="custom-jfx-button-raised" text="Otwórz w folderze" />
                                           <JFXButton fx:id="stopButton" buttonType="RAISED" onAction="#handleStopButtonAction" styleClass="custom-jfx-button-raised" text="Zatrzymaj" />
                                        </children>
@@ -179,7 +147,7 @@
                <top>
                   <StackPane prefHeight="100.0" BorderPane.alignment="CENTER">
                      <children>
-                        <Label alignment="CENTER" styleClass="jfx-text-title" text="Maps Converter" textAlignment="CENTER" />
+                        <Label alignment="CENTER" styleClass="jfx-text-title" text="Energo Maps Converter" textAlignment="CENTER" />
                      </children>
                   </StackPane>
                </top>
@@ -201,7 +169,7 @@
                               <Label fx:id="maxHeapSizeLabel" text="0" />
                            </children>
                         </HBox>
-                        <Label text="Copyright © palsoft">
+                        <Label text="Copyright © Jacek Paluszak">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>

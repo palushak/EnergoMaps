@@ -3,22 +3,21 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import org.slf4j.Logger;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class LoadService extends Service<Void> {
 
     private Boolean currentState;
-    private List<File> files;
+    //private List<File> files;
+    private File file;
     private ObjectProperty<String> currentWork = new SimpleObjectProperty<>();
     private ObjectProperty<String> fileNames = new SimpleObjectProperty<>();
     private ObjectProperty<Long> pointsCount = new SimpleObjectProperty<>();
-
 
 
     @Override
@@ -42,7 +41,7 @@ public class LoadService extends Service<Void> {
                     );
 
                     StringBuilder fileNamesString = new StringBuilder();
-                    for (File file : files) {
+//                    for (File file : files) {
 
                         if (file != null) {
                             fileNamesString.append(file.getName() + ", ");
@@ -56,47 +55,51 @@ public class LoadService extends Service<Void> {
                             try {
                                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                                 String row = bufferedReader.readLine();
-                                String[] pointArray = new String[6];
-                                pointArray = row.split(" ");
-                                if (pointArray.length == 6) {
 
+                                String[] polaHeaders;
+                                polaHeaders = row.split(";");
+
+//                                String head1 = polaHeaders[0].replace("\"", ""); //
+                                String head2 = polaHeaders[1].replace("\"", ""); //
+                                String head3 = polaHeaders[2].replace("\"", ""); //
+//                                String head4 = polaHeaders[3].replace("\"", ""); //
+                                String head5 = polaHeaders[4].replace("\"", ""); //
+
+//                                System.out.println("Kontrola naglowka: 1 " + head1 + ", 2 " + head2 + ", 3 " + head3 + ", 4 " + head4 + ", 5 " + head5);
+
+                                if (
+                                                head2.equals("Ulica")
+                                                && head3.equals("Nr domu")
+                                                && head5.equals("Nr punktu poboru energii")
+                                ) {
                                     Path path = Paths.get(file.getPath());
-                                    long pointsCountTemp = Files.lines(path).count();
+//                                    System.out.println(path);
+                                    long pointsCountTemp = Files.lines(path, Charset.defaultCharset()).count()-1;
+//                                    System.out.println(pointsCountTemp);
 
                                     Platform.runLater(
                                             () -> {
                                                 setPointsCount(getPointsCount() + pointsCountTemp);
                                             }
                                     );
-
-
-                                } else if (pointArray.length == 8){
-                                    Path path = Paths.get(file.getPath());
-                                    long pointsCountTemp = Files.lines(path).count();
-
-                                    Platform.runLater(
-                                            () -> {
-                                                setPointsCount(getPointsCount() + pointsCountTemp);
-                                            }
-                                    );
-
                                 } else {
+                                    System.out.println("sdfljhas");
                                     Platform.runLater(
                                             () -> {
-                                                setCurrentWork("Błędny format pliku: "+file.getName());
+                                                setCurrentWork("Błędny format pliku: " + file.getName());
                                             }
                                     );
-                                   this.cancel();
+                                    this.cancel();
                                 }
 
                             } catch (FileNotFoundException ex) {
                                 ex.printStackTrace();
-                            } catch (IOException ex) {
+                            } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
                         }
 
-                    }
+//                    } end for files
 
 
                 } catch (Exception e) {
@@ -123,9 +126,9 @@ public class LoadService extends Service<Void> {
         this.currentState = stateNew;
     }
 
-    public void setFiles(List<File> files) {
-        this.files = files;
-    }
+//    public void setFiles(List<File> files) {
+//        this.files = files;
+//    }
 
 
     public ObjectProperty<String> currentWorkProperty() {
@@ -164,4 +167,9 @@ public class LoadService extends Service<Void> {
         currentPointsCountProperty().set(pointsCount);
     }
 
+
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 }

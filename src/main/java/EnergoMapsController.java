@@ -50,31 +50,22 @@ public class EnergoMapsController implements Initializable {
     @FXML
     private Label pointsCountLabel;
     @FXML
-    private Label pointsExportCountLabel;
-    @FXML
     private Label sliderValueLabel;
     @FXML
     private Label percentLabel;
     @FXML
     private Label workLabel;
     @FXML
-    private Label bytesLabel;
-    @FXML
     private Label heapSizeLabel;
     @FXML
     private Label maxHeapSizeLabel;
-    @FXML
-    private JFXTextField pointsPerFileTextField;
-    @FXML
-    private JFXTextField filesCountTextField;
     @FXML
     private JFXProgressBar progressBar;
     @FXML
     private JFXSpinner filesSpinner;
     @FXML
     private JFXSpinner taskSpinner;
-    @FXML
-    private JFXSlider densitySlider;
+
     @FXML
     private JFXDialog infoDialog;
     @FXML
@@ -85,11 +76,9 @@ public class EnergoMapsController implements Initializable {
     private JFXButton infoButtonAccept;
 
 
-    private List<File> files;
+    //private List<File> files;
+    private File file;
     private Long pointsCount;
-    private Long pointsExportCount;
-    private Long pointsPerFile;
-    private Long filesCount;
     private ExportService exportService;
     private LoadService loadService;
     private Boolean readyToExport = true;
@@ -98,18 +87,18 @@ public class EnergoMapsController implements Initializable {
     @FXML
     protected void handlePathButtonAction(ActionEvent event) {
 
-        files = new ArrayList<>();
+//        files = new ArrayList<>();
         Window owner = pathButton.getScene().getWindow();
         toastStage = (Stage) owner.getScene().getWindow();
 
         FileChooser filesChooser = new FileChooser();
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XYZ files (*.xyz)", "*.xyz");
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
         filesChooser.getExtensionFilters().add(extFilter);
-        //file = filesChooser.showOpenDialog(owner);
+        file = filesChooser.showOpenDialog(owner);
 
-        files = filesChooser.showOpenMultipleDialog(owner);
+//        files = filesChooser.showOpenMultipleDialog(owner);
 
-        if (files != null) {
+        if (file != null) {
             readyToExport = true;
             Platform.runLater(new Runnable() {
                 @Override
@@ -118,32 +107,22 @@ public class EnergoMapsController implements Initializable {
                 }
             });
             loadService = new LoadService();
-            loadService.setFiles(files);
+//            loadService.setFiles(files);
+            loadService.setFile(file);
             loadService.setOnSucceeded((WorkerStateEvent t) -> {
-                SucssesToast("Load info", "Pliki wczytano poprawnie.");
+                SucssesToast("Load info", "Plik wczytano poprawnie.");
 
-                pointsPerFileTextField.setDisable(false);
-                filesCountTextField.setDisable(false);
                 pointsCount = loadService.getPointsCount();
-                pointsExportCount = pointsCount;
+
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
                         filesSpinner.setVisible(false);
-                        pointsExportCountLabel.setText(pointsExportCount.toString());
+
                     }
                 });
-                densitySlider.setValue(100);
-                if (pointsPerFile != null) {
-                    if (pointsPerFile > 0) {
-                        countFiles();
-                    }
-                }
-                if (filesCount != null) {
-                    if (filesCount > 0) {
-                        countPoints();
-                    }
-                }
+
+
 
             });
             loadService.setOnFailed((WorkerStateEvent t) -> {
@@ -190,7 +169,7 @@ public class EnergoMapsController implements Initializable {
     @FXML
     protected void handleConvertButtonAction(ActionEvent actionEvent) {
         if (readyToExport) {
-            if (filesCount <= 200) {
+
                 Window owner = convertButton.getScene().getWindow();
                 toastStage = (Stage) owner.getScene().getWindow();
                 openFolderButton.setVisible(false);
@@ -198,25 +177,17 @@ public class EnergoMapsController implements Initializable {
                 workLabel.setVisible(true);
                 pathButton.setDisable(true);
                 convertButton.setDisable(true);
-                densitySlider.setDisable(true);
-                pointsPerFileTextField.setDisable(true);
-                filesCountTextField.setDisable(true);
 
                 exportService = new ExportService();
-                exportService.setFiles(files);
+                exportService.setFile(file);
                 exportService.setPointsCount(pointsCount);
-                exportService.setFilesCount(filesCount);
-                exportService.setPointsExportCount(pointsExportCount);
-                exportService.setPointsPerFile(pointsPerFile);
+
                 exportService.setOnSucceeded((WorkerStateEvent t) -> {
                     stopButton.setVisible(false);
                     openFolderButton.setVisible(true);
                     convertButton.setDisable(false);
                     pathButton.setDisable(false);
                     taskSpinner.setVisible(false);
-                    densitySlider.setDisable(false);
-                    pointsPerFileTextField.setDisable(false);
-                    filesCountTextField.setDisable(false);
                     SucssesToast("Converter info", "Punkty wyeksportowano poprawnie.");
                 });
                 exportService.setOnFailed((WorkerStateEvent t) -> {
@@ -230,9 +201,6 @@ public class EnergoMapsController implements Initializable {
                     convertButton.setDisable(false);
                     pathButton.setDisable(false);
                     taskSpinner.setVisible(false);
-                    densitySlider.setDisable(false);
-                    pointsPerFileTextField.setDisable(false);
-                    filesCountTextField.setDisable(false);
                     NoticeToast("Converter info", "Eksport anulowany.");
                 });
 
@@ -245,16 +213,7 @@ public class EnergoMapsController implements Initializable {
                 percentLabel.textProperty().bind(exportService.progressProperty().multiply(100).asString("%.2f %%"));
                 workLabel.textProperty().bind(exportService.currentWorkProperty());
                 exportService.start();
-            } else {
-                infoDialog.setDialogContainer(stackPane);
-                infoHeader.setText("UWAGA");
-                infoBody.setText("ilosc plikow > 200");
-                infoDialog.show();
-                infoButtonAccept.setOnAction(ex -> {
-                    infoDialog.close();
-                });
 
-            }
         } else {
 
         }
@@ -263,7 +222,7 @@ public class EnergoMapsController implements Initializable {
     @FXML
     public void handleOpenFolderButtonAction(ActionEvent actionEvent) throws IOException {
         String myDocuments = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
-        File dirMain = new File(myDocuments + "\\" + "XYZ-to-PCD-pliki");
+        File dirMain = new File(myDocuments + "\\" + "EZ_KML-pliki");
         if (!dirMain.exists()) {
             dirMain.mkdir();
         }
@@ -271,93 +230,50 @@ public class EnergoMapsController implements Initializable {
 
     }
 
-    private void countFiles() {
-        Double filesCountD = (double) pointsExportCount / (double) pointsPerFile;
-        filesCount = (long) Math.ceil(filesCountD);
-        Platform.runLater(() -> {
-            filesCountTextField.setText(filesCount.toString());
-        });
-    }
 
-    private void countPoints() {
-        Double pointCountD = (double) pointsExportCount / (double) filesCount;
-        pointsPerFile = (long) Math.ceil(pointCountD);
 
-        Platform.runLater(() -> {
-            pointsPerFileTextField.setText(pointsPerFile.toString());
-        });
-    }
-
-    private void countPointsToExport(double newValue) {
-        Double pointCountD = ((double) pointsCount * (double) newValue) / 100;
-
-        pointsExportCount = (long) Math.ceil(pointCountD);
-        countFiles();
-        Platform.runLater(() -> {
-            pointsExportCountLabel.setText(pointsExportCount.toString());
-            if (pointsExportCount < pointsPerFile) {
-                pointsPerFile = pointsExportCount;
-                pointsPerFileTextField.setText(pointsExportCount.toString());
-                countBytes();
-                countFiles();
-            }
-        });
-    }
-
-    private void countBytes() {
-        Double bytes = (double) pointsPerFile * 35;
-        Double bytesK = bytes / 1024.0;
-        Double bytesM = (bytes / 1024.0) / 1024.0;
-        Double bytesG = ((bytes / 1024.0) / 1024.0) / 1024.0;
-        Double bytesT = (((bytes / 1024.0) / 1024.0) / 1024.0) / 1024.0;
-
-        DecimalFormat dec = new DecimalFormat("0.00");
-
-        Platform.runLater(() -> {
-            if (bytesT > 1) {
-                bytesLabel.setText(dec.format(bytesT).concat(" TB"));
-            } else if (bytesG > 1) {
-                bytesLabel.setText(dec.format(bytesG).concat(" GB"));
-            } else if (bytesM > 1) {
-                bytesLabel.setText(dec.format(bytesM).concat(" MB"));
-            } else if (bytesK > 1) {
-                bytesLabel.setText(dec.format(bytesK).concat(" KB"));
-            } else {
-                bytesLabel.setText(dec.format(bytes).concat(" Bytes"));
-            }
-
-        });
-    }
+//    private void countBytes() {
+//        Double bytes = (double) pointsPerFile * 35;
+//        Double bytesK = bytes / 1024.0;
+//        Double bytesM = (bytes / 1024.0) / 1024.0;
+//        Double bytesG = ((bytes / 1024.0) / 1024.0) / 1024.0;
+//        Double bytesT = (((bytes / 1024.0) / 1024.0) / 1024.0) / 1024.0;
+//
+//        DecimalFormat dec = new DecimalFormat("0.00");
+//
+////        Platform.runLater(() -> {
+////            if (bytesT > 1) {
+////                bytesLabel.setText(dec.format(bytesT).concat(" TB"));
+////            } else if (bytesG > 1) {
+////                bytesLabel.setText(dec.format(bytesG).concat(" GB"));
+////            } else if (bytesM > 1) {
+////                bytesLabel.setText(dec.format(bytesM).concat(" MB"));
+////            } else if (bytesK > 1) {
+////                bytesLabel.setText(dec.format(bytesK).concat(" KB"));
+////            } else {
+////                bytesLabel.setText(dec.format(bytes).concat(" Bytes"));
+////            }
+////
+////        });
+//    }
 
     private void resetInterface() {
         progressBar.setVisible(false);
         convertButton.setDisable(true);
-        pointsPerFileTextField.setDisable(true);
-        filesCountTextField.setDisable(true);
         openFolderButton.setVisible(false);
         stopButton.setVisible(false);
         workLabel.setVisible(false);
         filesSpinner.setVisible(false);
         taskSpinner.setVisible(false);
-        densitySlider.setDisable(true);
         fileNames.textProperty().unbind();
         fileNames.setText("");
-        pointsPerFileTextField.setText("");
-        filesCountTextField.setText("");
         pointsCountLabel.textProperty().unbind();
         pointsCountLabel.setText("0");
-        pointsExportCountLabel.textProperty().unbind();
-        pointsExportCountLabel.setText("0");
-        densitySlider.setValue(100);
         percentLabel.textProperty().unbind();
         percentLabel.setText("");
         workLabel.textProperty().unbind();
         workLabel.setText("");
-        bytesLabel.setText("0 Bytes");
         pointsCount = (long) 0;
-        pointsExportCount = (long) 0;
-        pointsPerFile = (long) 0;
-        filesCount = (long) 0;
     }
 
     private void checkHeapSize() {
@@ -502,10 +418,7 @@ public class EnergoMapsController implements Initializable {
         checkHeapSize();
 
         toastStage = new Stage();
-        densitySlider.setMin(1);
-        densitySlider.setMax(100);
         resetInterface();
-        sliderValueLabel.textProperty().bind(densitySlider.valueProperty().asString("%.0f %%"));
 
         UnaryOperator<TextFormatter.Change> integerFilter = change -> {
             int newLength = change.getControlNewText().length();
@@ -523,65 +436,26 @@ public class EnergoMapsController implements Initializable {
             }
             return null;
         };
-        pointsPerFileTextField.setTextFormatter(new TextFormatter<String>(integerFilter));
-        pointsPerFileTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (pointsPerFileTextField.isFocused()) {
+
+        pointsCountLabel.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println(oldValue+", new: "+newValue);
+
                 if (newValue.equals("0") || newValue.equals("")) {
                     Platform.runLater(() -> {
-                        pointsPerFileTextField.setText("");
-                        filesCountTextField.setText("");
+
                         convertButton.setDisable(true);
-                        densitySlider.setDisable(true);
                     });
                 }
                 if (!newValue.isEmpty() && !newValue.equals("0")) {
                     Platform.runLater(() -> {
-                        densitySlider.setDisable(false);
                         convertButton.setDisable(false);
                     });
-                    pointsPerFile = Long.parseLong(newValue);
-                    if (pointsPerFile > pointsExportCount) {
-                        pointsPerFile = pointsExportCount;
-                        pointsPerFileTextField.setText(pointsExportCount.toString());
-                    }
-                    countFiles();
-                    countBytes();
+
                 }
-            }
+
         });
 
-        filesCountTextField.setTextFormatter(new TextFormatter<String>(integerFilter));
-        filesCountTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (filesCountTextField.isFocused()) {
-                if (newValue.equals("0") || newValue.equals("")) {
-                    Platform.runLater(() -> {
-                        filesCountTextField.setText("");
-                        pointsPerFileTextField.setText("");
-                        convertButton.setDisable(true);
-                        densitySlider.setDisable(true);
-                    });
-                }
-                if (!newValue.isEmpty() && !newValue.equals("0")) {
-                    Platform.runLater(() -> {
-                        densitySlider.setDisable(false);
-                        convertButton.setDisable(false);
-                    });
-                    filesCount = Long.parseLong(newValue);
-                    countPoints();
-                    countBytes();
-                }
-            }
-        });
 
-        densitySlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (pointsCount != null) {
-                if (pointsCount > 0) {
-
-                    countPointsToExport(newValue.doubleValue());
-
-                }
-            }
-        });
     }
 
 

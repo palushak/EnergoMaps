@@ -36,7 +36,7 @@ launch4j {
     maxHeapSize = 8192
     outfile = "EnergoMaps.exe"
     mainClassName = "EnergoMaps"
-    icon = "${projectDir}/icon/dc.ico"
+    icon = "${projectDir}/icon/icon.ico"
     productName = "EnergoMaps"
     version = "1.0.0"
     copyright = "j.paluszak@pwsz.elblag.pl"
