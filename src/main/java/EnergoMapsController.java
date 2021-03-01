@@ -438,8 +438,6 @@ public class EnergoMapsController implements Initializable {
         };
 
         pointsCountLabel.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println(oldValue+", new: "+newValue);
-
                 if (newValue.equals("0") || newValue.equals("")) {
                     Platform.runLater(() -> {
 
@@ -452,7 +450,6 @@ public class EnergoMapsController implements Initializable {
                     });
 
                 }
-
         });
 
 

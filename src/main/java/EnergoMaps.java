@@ -26,7 +26,7 @@ public class EnergoMaps extends Application {
         try {
             Rectangle2D bounds = Screen.getScreens().get(0).getBounds();
             width = bounds.getWidth() / 2.3;
-            height = bounds.getHeight() / 1.4;
+            height = bounds.getHeight() / 2.0;
         } catch (Exception e) {
         }
 

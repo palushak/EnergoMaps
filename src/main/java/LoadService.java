@@ -83,7 +83,6 @@ public class LoadService extends Service<Void> {
                                             }
                                     );
                                 } else {
-                                    System.out.println("sdfljhas");
                                     Platform.runLater(
                                             () -> {
                                                 setCurrentWork("Błędny format pliku: " + file.getName());

@@ -1,11 +1,9 @@
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -30,12 +28,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.stage.Stage;
 import markers.EMarkers;
-import markers.Marker;
 import markers.Properties;
 import org.apache.commons.lang3.RandomStringUtils;
-
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -149,6 +144,14 @@ public class ExportService extends Service<Void> {
 
                 counter = 0;
 
+                EMarkers emarkersLabels = new EMarkers();
+                emarkersLabels.setType("LabelsCollection");
+                List<markers.Marker> labelsList = new ArrayList<markers.Marker>();
+
+                EMarkers emarkersMarkers = new EMarkers();
+                emarkersMarkers.setType("MarkersCollection");
+                List<markers.Marker> markersList = new ArrayList<markers.Marker>();
+
                 try {
                     Platform.runLater(
                             () -> {
@@ -157,13 +160,7 @@ public class ExportService extends Service<Void> {
                     );
 
 
-                    EMarkers emarkersLabels = new EMarkers();
-                    emarkersLabels.setType("LabelsCollection");
-                    List<markers.Marker> labelsList = new ArrayList<markers.Marker>();
 
-                    EMarkers emarkersMarkers = new EMarkers();
-                    emarkersMarkers.setType("MarkersCollection");
-                    List<markers.Marker> markersList = new ArrayList<markers.Marker>();
 
                     context = new GeoApiContext.Builder().apiKey("AIzaSyDJBzpwv6y4wRCsXQv3gUBZr1J9PY3Xq5g").build();
 
@@ -369,181 +366,165 @@ public class ExportService extends Service<Void> {
                     );
 
 
-//                    if (!currentState) return null;
+                    if (!currentState) return null;
+
+                    myDocuments = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
+
+                    dirMain = new File(myDocuments + "\\" + "EZ_KML-pliki");
+
+                    if (!dirMain.exists()) {
+                        dirMain.mkdir();
+                    }
+
+                    fName = file.getName().replaceFirst("[.][^.]+$", "");
+
+
+//                    dirMain2 = new File(dirMain + "\\" + fName);
 //
-//                    myDocuments = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
-//
-//                    dirMain = new File(myDocuments + "\\" + "EZ_KML-pliki");
-//
-//                    if (!dirMain.exists()) {
-//                        dirMain.mkdir();
+//                    if (!dirMain2.exists()) {
+//                        dirMain2.mkdir();
 //                    }
-//
-//                    fName = file.getName().replaceFirst("[.][^.]+$", "");
-//
-//
-////                    dirMain2 = new File(dirMain + "\\" + fName);
-////
-////                    if (!dirMain2.exists()) {
-////                        dirMain2.mkdir();
-////                    }
-////                    mainFilesPath = dirMain2.toString() + "\\" + fName;
-//
-//                    String filename = dirMain.toString() + "\\" + fName + "__1.kml";
-//
-//
-//                    List<markers.Marker> labelsListTEMP = labelsListMAIN.stream().collect(Collectors.toList());
-//                    List<markers.Marker> markersListTEMP = markersListMAIN.stream().collect(Collectors.toList());
-//
-//                    Calendar currentCalendar = Calendar.getInstance();
-//                    String year = Integer.toString(currentCalendar.get(Calendar.YEAR));
-//                    // String month = currentCalendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
-//                    // Locale.getDefault());
-//                    String month = new SimpleDateFormat("MMMM").format(currentCalendar.getTime());
-//
-//                    File dirYear = new File(dirMain.getName() + "\\" + year);
-//
-//                    if (!dirYear.exists()) {
-//                        dirYear.mkdir();
-//                    }
-//
-//                    File dirMonth = new File(dirMain.getName() + "\\" + dirYear.getName() + "\\" + month);
-//
-//                    if (!dirMonth.exists()) {
-//                        dirMonth.mkdir();
-//                    }
-//
-//
-//                    Double sizes = (double) (markersListTEMP.size() + labelsListTEMP.size());
-//
-//                    Integer maxMarkers = 1500;
-//                    Double sizesDz = sizes / maxMarkers;
-//                    Double mL = Math.ceil(sizesDz);
-//
-//                    Integer nuberOfFiles = mL.intValue();
-//
-//                    System.out.println("Markerow: " + sizes + ",  plikow: " + nuberOfFiles + "(kontrolnie:  przed: " + labelsListMAIN.size() + "," + markersListMAIN.size() + " , po: "
-//                            + labelsListTEMP.size() + ", " + markersListTEMP.size() + ")");
-//
-//                    Integer licznikM;
-//                    for (int fileNr = 1; fileNr <= nuberOfFiles; fileNr++) {
-//                        licznikM = 0;
-//                        // System.out.println(fileNr);
-//                        String nazwaPliku = "ODCZYTY_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
-//
-//                        if (context.getRegisteredObject("NazwaPaczki") != null) {
-//                            String nazwaWarstwy = (String) context.getRegisteredObject("NazwaPaczki");
-//                            nazwaPliku = (String) context.getRegisteredObject("NazwaPaczki") + "_nr_" + fileNr;
-//                            if (context.getRegisteredObject("InkasentPaczki") != null) {
-//                                String nazwaInkasenta = (String) context.getRegisteredObject("InkasentPaczki");
-//                                nazwaPliku = nazwaInkasenta.trim() + "_" + nazwaPliku;
-//                            }
-//                        }
-//
-//                        String destination = dirMain.getName() + "\\" + dirYear.getName() + "\\" + dirMonth.getName() + "\\" + nazwaPliku + ".kml";
-//
-//                        Kml kml = KmlFactory.createKml();
-//                        Document doc = kml.createAndSetDocument().withName("WARSTWY").withOpen(true);
-//
-//                        // create a Folder
-//
-//                        Folder folderImport = doc.createAndAddFolder();
-//                        folderImport.withName(nazwaPliku).withOpen(true);
-//
-//                        String nazwaWarstwyLabels = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - ulice (" + fileNr + "/" + nuberOfFiles + ")";
-//                        Folder folderLabels = folderImport.createAndAddFolder();
-//                        folderLabels.withName(nazwaWarstwyLabels).withOpen(true);
-//
-//                        String nazwaWarstwyMarkers = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - domy (" + fileNr + "/" + nuberOfFiles + ")";
-//                        Folder folderMarkers = folderImport.createAndAddFolder();
-//                        folderMarkers.withName(nazwaWarstwyMarkers).withOpen(true);
-//
-//
-//                        Iterator<markers.Marker> iterL = labelsListTEMP.iterator();
-//                        while (iterL.hasNext()) {
-//                            licznikM++;
-//                            // System.out.println(licznikM);
-//
-//                            markers.Marker markersRow = iterL.next();
-//
-//                            double longitude;
-//                            double latitude;
-//                            String markerLabel;
-//                            String miasto;
-//                            String iloscOdczytow;
-//                            String iloscWykonanych;
-//
-//                            longitude = markersRow.getGeometry().getCoordinates().get(1);
-//                            latitude = markersRow.getGeometry().getCoordinates().get(0);
-//
-//                            miasto = markersRow.getProperties().getMiasto();
-//                            markerLabel = "ul. " + markersRow.getProperties().getUlica();
-//                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
-//                            iloscWykonanych = markersRow.getProperties().getIloscOdczytowWykonanych().toString();
-//
-//                            createStreet(doc, folderLabels, longitude, latitude, miasto, markerLabel, iloscOdczytow, iloscWykonanych);
-//
-//                            iterL.remove();
-//
-//                            if (licznikM == maxMarkers) {
-//                                break;
-//                            }
-//                        }
-//
-//                        Iterator<markers.Marker> iterM = markersListTEMP.iterator();
-//                        while (iterM.hasNext()) {
-//                            licznikM++;
-//                            // System.out.println(licznikM);
-//                            markers.Marker markersRow = iterM.next();
-//
-//                            double longitude;
-//                            double latitude;
-//                            String markerLabel;
-//                            String miasto;
-//                            String iloscOdczytow;
-//                            String iloscWykonanych;
-//
-//                            longitude = markersRow.getGeometry().getCoordinates().get(1);
-//                            latitude = markersRow.getGeometry().getCoordinates().get(0);
-//
-//                            miasto = markersRow.getProperties().getMiasto();
-//                            markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu() + markersRow.getProperties().getNumerDomuChars();
-//                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
-//                            iloscWykonanych = markersRow.getProperties().getIloscOdczytowWykonanych().toString();
-//
-//                            createPlacemark(doc, folderMarkers, longitude, latitude, miasto, markerLabel, iloscOdczytow, iloscWykonanych);
-//
-//                            iterM.remove();
-//
-//                            if (licznikM == maxMarkers) {
-//                                break;
-//                            }
-//                        }
-//
-//                        // marshals to console
-//                        // kml.marshal();
-//
-//                        // print and save
-//                        try {
-//                            Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
-//                            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-//                            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
-//                                @Override
-//                                public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
-//                                    return namespaceUri.matches("http://www.w3.org/\\d{4}/Atom") ? "atom"
-//                                            : (namespaceUri.matches("urn:oasis:names:tc:ciq:xsdschema:xAL:.*?") ? "xal"
-//                                            : (namespaceUri.matches("http://www.google.com/kml/ext/.*?") ? "gx" : (namespaceUri.matches("http://www.opengis.net/kml/.*?") ? "" : (null))));
-//                                }
-//                            });
-//                            File file = new File(destination);
-//                            marshaller.marshal(kml, file);
-//                            // kml.marshal();
-//                        } catch (JAXBException e) {
-//
-//                            e.printStackTrace();
-//                        }
-//
-//                    }
+//                    mainFilesPath = dirMain2.toString() + "\\" + fName;
+
+                    String filename = dirMain.toString() + "\\" + fName + "__1.kml";
+
+
+                    List<markers.Marker> labelsListTEMP = labelsList.stream().collect(Collectors.toList());
+                    List<markers.Marker> markersListTEMP = markersList.stream().collect(Collectors.toList());
+
+                    Calendar currentCalendar = Calendar.getInstance();
+                    String year = Integer.toString(currentCalendar.get(Calendar.YEAR));
+
+
+                    File dirYear = new File(dirMain + "\\" + year);
+
+                    if (!dirYear.exists()) {
+                        dirYear.mkdir();
+                    }
+
+
+                    Double sizes = (double) (markersListTEMP.size() + labelsListTEMP.size());
+
+                    Integer maxMarkers = 1500;
+                    Double sizesDz = sizes / maxMarkers;
+                    Double mL = Math.ceil(sizesDz);
+
+                    Integer nuberOfFiles = mL.intValue();
+
+                    System.out.println("Markerow: " + sizes + ",  plikow: " + nuberOfFiles + "(kontrolnie:  przed: " + labelsList.size() + "," + markersList.size() + " , po: "
+                            + labelsListTEMP.size() + ", " + markersListTEMP.size() + ")");
+
+                    Integer licznikM;
+                    for (int fileNr = 1; fileNr <= nuberOfFiles; fileNr++) {
+                        licznikM = 0;
+                        // System.out.println(fileNr);
+                        String nazwaPliku = "PUNKTY_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
+
+
+
+                        String destination = dirYear + "\\" + nazwaPliku + ".kml";
+
+                        String nazwaWarstwy = "m121111111111111111111111111111111111";
+
+                        Kml kml = KmlFactory.createKml();
+                        Document doc = kml.createAndSetDocument().withName("WARSTWY").withOpen(true);
+
+                        // create a Folder
+
+                        Folder folderImport = doc.createAndAddFolder();
+                        folderImport.withName(nazwaPliku).withOpen(true);
+
+                        String nazwaWarstwyLabels = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - ulice (" + fileNr + "/" + nuberOfFiles + ")";
+                        Folder folderLabels = folderImport.createAndAddFolder();
+                        folderLabels.withName(nazwaWarstwyLabels).withOpen(true);
+
+                        String nazwaWarstwyMarkers = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - domy (" + fileNr + "/" + nuberOfFiles + ")";
+                        Folder folderMarkers = folderImport.createAndAddFolder();
+                        folderMarkers.withName(nazwaWarstwyMarkers).withOpen(true);
+
+
+                        Iterator<markers.Marker> iterL = labelsListTEMP.iterator();
+                        while (iterL.hasNext()) {
+                            licznikM++;
+                            // System.out.println(licznikM);
+
+                            markers.Marker markersRow = iterL.next();
+
+                            double longitude;
+                            double latitude;
+                            String markerLabel;
+                            String miasto;
+                            String iloscOdczytow;
+
+                            longitude = markersRow.getGeometry().getCoordinates().get(1);
+                            latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                            miasto = markersRow.getProperties().getMiasto();
+                            markerLabel = "ul. " + markersRow.getProperties().getUlica();
+                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                            createStreet(doc, folderLabels, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                            iterL.remove();
+
+                            if (licznikM == maxMarkers) {
+                                break;
+                            }
+                        }
+
+                        Iterator<markers.Marker> iterM = markersListTEMP.iterator();
+                        while (iterM.hasNext()) {
+                            licznikM++;
+                            // System.out.println(licznikM);
+                            markers.Marker markersRow = iterM.next();
+
+                            double longitude;
+                            double latitude;
+                            String markerLabel;
+                            String miasto;
+                            String iloscOdczytow;
+                            String iloscWykonanych;
+
+                            longitude = markersRow.getGeometry().getCoordinates().get(1);
+                            latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                            miasto = markersRow.getProperties().getMiasto();
+                            markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
+                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                            createPlacemark(doc, folderMarkers, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                            iterM.remove();
+
+                            if (licznikM == maxMarkers) {
+                                break;
+                            }
+                        }
+
+                        // marshals to console
+                        // kml.marshal();
+
+                        // print and save
+                        try {
+                            Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
+                            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
+                                @Override
+                                public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+                                    return namespaceUri.matches("http://www.w3.org/\\d{4}/Atom") ? "atom"
+                                            : (namespaceUri.matches("urn:oasis:names:tc:ciq:xsdschema:xAL:.*?") ? "xal"
+                                            : (namespaceUri.matches("http://www.google.com/kml/ext/.*?") ? "gx" : (namespaceUri.matches("http://www.opengis.net/kml/.*?") ? "" : (null))));
+                                }
+                            });
+                            File file = new File(destination);
+                            marshaller.marshal(kml, file);
+                            // kml.marshal();
+                        } catch (JAXBException e) {
+
+                            e.printStackTrace();
+                        }
+
+                    }
 
                     tEnd = System.currentTimeMillis();
 
@@ -667,7 +648,7 @@ public class ExportService extends Service<Void> {
 
             xxyy[0] = xx;
             xxyy[1] = yy;
-
+            System.out.println("XXYY  >>>>>>>>>>>>" + xx + "," + yy);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -794,7 +775,7 @@ public class ExportService extends Service<Void> {
         return xxyy;
     }
 
-    private static void createPlacemark(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow, String iloscWykonanych) {
+    private static void createPlacemark(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow) {
 
         Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
         Style style = document.createAndAddStyle();
@@ -807,7 +788,7 @@ public class ExportService extends Service<Void> {
                 // .withDescription("<![CDATA[<h1>" + markerName + "</h1>\r\n<p><font
                 // color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" +
                 // iloscWykonanych + "</font></p>")
-                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" + iloscWykonanych + "</font></p>")
+                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow)
 
                 // coordinates and distance (zoom level) of the viewer
                 .createAndSetLookAt().withLongitude(longitude).withLatitude(latitude).withAltitude(0).withRange(12000000);
@@ -815,7 +796,7 @@ public class ExportService extends Service<Void> {
         placemark.createAndSetPoint().addToCoordinates(longitude, latitude);
     }
 
-    private static void createStreet(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow, String iloscWykonanych) {
+    private static void createStreet(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow) {
 
         Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
         Style style = document.createAndAddStyle();
@@ -828,7 +809,7 @@ public class ExportService extends Service<Void> {
                 // .withDescription("<![CDATA[<h1>" + markerName + "</h1>\r\n<p><font
                 // color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" +
                 // iloscWykonanych + "</font></p>")
-                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" + iloscWykonanych + "</font></p>")
+                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow)
 
                 // coordinates and distance (zoom level) of the viewer
                 .createAndSetLookAt().withLongitude(longitude).withLatitude(latitude).withAltitude(0).withRange(12000000);
