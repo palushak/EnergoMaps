@@ -4,6 +4,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -31,6 +32,7 @@ import javafx.concurrent.Task;
 import markers.EMarkers;
 import markers.Properties;
 import org.apache.commons.lang3.RandomStringUtils;
+
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -73,6 +75,7 @@ public class ExportService extends Service<Void> {
                 );
 
                 counter = 0;
+                updateProgress(counter, max);
                 currentState = true;
                 tStart = System.currentTimeMillis();
 
@@ -90,7 +93,7 @@ public class ExportService extends Service<Void> {
 
                     Platform.runLater(
                             () -> {
-                                setCurrentWork("1 z 4: dekodowanie pliku...");
+                                setCurrentWork("1 z 3: dekodowanie pliku...");
                             }
                     );
 
@@ -118,8 +121,8 @@ public class ExportService extends Service<Void> {
 //                        System.out.println(rowOdczyt.kod_punktu.toString());
                         listOdczyty.add(rowOdczyt);
 
-                        counter++;
-                        updateProgress(counter, max);
+//                        counter++;
+//                        updateProgress(counter, max);
                     }
 
                     //} end for files
@@ -129,37 +132,26 @@ public class ExportService extends Service<Void> {
                     e.printStackTrace();
                 }
 
+//                EMarkers emarkersLabels = new EMarkers();
+//                emarkersLabels.setType("LabelsCollection");
+                List<markers.Marker> labelsList_12m = new ArrayList<markers.Marker>();
+                List<markers.Marker> labelsList_6m = new ArrayList<markers.Marker>();
+                List<markers.Marker> labelsList_2m = new ArrayList<markers.Marker>();
+
+//                EMarkers emarkersMarkers = new EMarkers();
+//                emarkersMarkers.setType("MarkersCollection");
+                List<markers.Marker> markersList_12m = new ArrayList<markers.Marker>();
+                List<markers.Marker> markersList_6m = new ArrayList<markers.Marker>();
+                List<markers.Marker> markersList_2m = new ArrayList<markers.Marker>();
+
+                List<markers.Marker> markersList_errors = new ArrayList<markers.Marker>();
 
                 try {
                     Platform.runLater(
                             () -> {
-                                setCurrentWork("2 z 4: dzielenie na warstwy...");
+                                setCurrentWork("2 z 3: geomapowanie adresow...");
                             }
                     );
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                counter = 0;
-
-                EMarkers emarkersLabels = new EMarkers();
-                emarkersLabels.setType("LabelsCollection");
-                List<markers.Marker> labelsList = new ArrayList<markers.Marker>();
-
-                EMarkers emarkersMarkers = new EMarkers();
-                emarkersMarkers.setType("MarkersCollection");
-                List<markers.Marker> markersList = new ArrayList<markers.Marker>();
-
-                try {
-                    Platform.runLater(
-                            () -> {
-                                setCurrentWork("3 z 4: geomapowanie adresow...");
-                            }
-                    );
-
-
 
 
                     context = new GeoApiContext.Builder().apiKey("AIzaSyDJBzpwv6y4wRCsXQv3gUBZr1J9PY3Xq5g").build();
@@ -175,6 +167,9 @@ public class ExportService extends Service<Void> {
                         if (!currentState) {
                             return null;
                         }
+
+
+                        boolean errorXXYY = false;
 
                         markers.Marker marker = new markers.Marker();
                         markers.Properties properties = new markers.Properties();
@@ -193,6 +188,7 @@ public class ExportService extends Service<Void> {
                         properties.setMiasto(row.miejscowosc.getValue());
                         if (row.ulica.isNotNull().getValue()) {
                             properties.setUlica(row.ulica.getValue());
+//                            properties.setUlica("testowa"+row.budynek.getValue());
                         } else {
                             properties.setUlica("");
                         }
@@ -211,6 +207,7 @@ public class ExportService extends Service<Void> {
                         propertiesLabel.setMiasto(row.miejscowosc.getValue());
                         if (row.ulica.isNotNull().getValue()) {
                             propertiesLabel.setUlica(row.ulica.getValue());
+//                            propertiesLabel.setUlica("testowa"+row.budynek.getValue());
                         } else {
                             propertiesLabel.setUlica("");
                         }
@@ -246,11 +243,17 @@ public class ExportService extends Service<Void> {
                             yy = xxyy[1];
                         }
 
+
                         if (xx.length() > 0 && yy.length() > 0) {
 
                             longitude = Double.parseDouble(xx);
                             latitude = Double.parseDouble(yy);
 
+                        }
+//                        System.out.println(longitude + ", " + latitude);
+                        if (longitude < 2 && latitude < 2) {
+                            errorXXYY = true;
+                            System.out.println("ERROR: " + longitude + ", " + latitude);
                         }
 
                         coordinates.add(latitude);
@@ -266,71 +269,164 @@ public class ExportService extends Service<Void> {
                         markerLabel.setProperties(propertiesLabel);
                         markerLabel.setType("Marker");
 
-                        boolean found = false;
+                        if (!errorXXYY) {
 
-                        for (markers.Marker markersRow : markersList) {
+                            switch (row.cykl.getValue()) {
 
-                            if (markersRow.getProperties().getMiasto().equals(marker.getProperties().getMiasto())
-                                    && markersRow.getProperties().getUlica().equals(marker.getProperties().getUlica())
-                                    && markersRow.getId_punktu().equals(marker.getId_punktu())
-                                    && markersRow.getProperties().getNumerDomu().equals(marker.getProperties().getNumerDomu())
-                                    && markersRow.getProperties().getStatus().equals(marker.getProperties().getStatus())) {
+                                case "12m":
+                                    boolean found = false;
+                                    for (markers.Marker markersRow : markersList_12m) {
 
-                                found = true;
-                                markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        if (markersRow.getProperties().getMiasto().equals(marker.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(marker.getProperties().getUlica())
+                                                && markersRow.getId_punktu().equals(marker.getId_punktu())
+                                                && markersRow.getProperties().getNumerDomu().equals(marker.getProperties().getNumerDomu())
+                                                && markersRow.getProperties().getStatus().equals(marker.getProperties().getStatus())) {
+
+                                            found = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+                                    if (!found) {
+                                        properties.setIloscOdczytow(1);
+                                        markersList_12m.add(marker);
+                                    }
+
+                                    boolean foundLabel = false;
+                                    for (markers.Marker markersRow : labelsList_12m) {
+
+                                        if (markersRow.getId_punktu().equals(markerLabel.getId_punktu())
+                                                && markersRow.getProperties().getMiasto().equals(markerLabel.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(markerLabel.getProperties().getUlica())
+                                                && markersRow.getProperties().getStatus().equals(markerLabel.getProperties().getStatus())) {
+
+                                            foundLabel = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+
+                                    if (!foundLabel) {
+                                        propertiesLabel.setIloscOdczytow(1);
+                                        String[] xxyyL = new String[2];
+                                        xxyyL = geocodeStreetOpegieka(propertiesLabel, userOpegieka, passOpegieka);
+                                        String xxL = xxyyL[0];
+                                        String yyL = xxyyL[1];
+                                        if (xxL.length() > 0 && yyL.length() > 0) {
+                                            Double latit = Double.parseDouble(yyL);
+                                            Double longit = Double.parseDouble(xxL);
+                                            coordinatesLabel.add(latit);
+                                            coordinatesLabel.add(longit);
+                                            geometryLabel.setCoordinates(coordinatesLabel);
+                                            geometryLabel.setType("Point");
+                                            markerLabel.setGeometry(geometryLabel);
+                                            labelsList_12m.add(markerLabel);
+                                        }
+                                    }
+                                    break;
+                                case "6m":
+                                    boolean found_6m = false;
+                                    for (markers.Marker markersRow : markersList_6m) {
+
+                                        if (markersRow.getProperties().getMiasto().equals(marker.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(marker.getProperties().getUlica())
+                                                && markersRow.getId_punktu().equals(marker.getId_punktu())
+                                                && markersRow.getProperties().getNumerDomu().equals(marker.getProperties().getNumerDomu())
+                                                && markersRow.getProperties().getStatus().equals(marker.getProperties().getStatus())) {
+
+                                            found_6m = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+                                    if (!found_6m) {
+                                        properties.setIloscOdczytow(1);
+                                        markersList_6m.add(marker);
+                                    }
+
+                                    boolean foundLabel_6m = false;
+                                    for (markers.Marker markersRow : labelsList_6m) {
+
+                                        if (markersRow.getId_punktu().equals(markerLabel.getId_punktu())
+                                                && markersRow.getProperties().getMiasto().equals(markerLabel.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(markerLabel.getProperties().getUlica())
+                                                && markersRow.getProperties().getStatus().equals(markerLabel.getProperties().getStatus())) {
+
+                                            foundLabel_6m = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+
+                                    if (!foundLabel_6m) {
+                                        propertiesLabel.setIloscOdczytow(1);
+                                        String[] xxyyL = new String[2];
+                                        xxyyL = geocodeStreetOpegieka(propertiesLabel, userOpegieka, passOpegieka);
+                                        String xxL = xxyyL[0];
+                                        String yyL = xxyyL[1];
+                                        if (xxL.length() > 0 && yyL.length() > 0) {
+                                            Double latit = Double.parseDouble(yyL);
+                                            Double longit = Double.parseDouble(xxL);
+                                            coordinatesLabel.add(latit);
+                                            coordinatesLabel.add(longit);
+                                            geometryLabel.setCoordinates(coordinatesLabel);
+                                            geometryLabel.setType("Point");
+                                            markerLabel.setGeometry(geometryLabel);
+                                            labelsList_6m.add(markerLabel);
+                                        }
+                                    }
+                                    break;
+                                case "2m":
+                                    boolean found_2m = false;
+                                    for (markers.Marker markersRow : markersList_2m) {
+
+                                        if (markersRow.getProperties().getMiasto().equals(marker.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(marker.getProperties().getUlica())
+                                                && markersRow.getId_punktu().equals(marker.getId_punktu())
+                                                && markersRow.getProperties().getNumerDomu().equals(marker.getProperties().getNumerDomu())
+                                                && markersRow.getProperties().getStatus().equals(marker.getProperties().getStatus())) {
+
+                                            found_2m = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+                                    if (!found_2m) {
+                                        properties.setIloscOdczytow(1);
+                                        markersList_2m.add(marker);
+                                    }
+
+                                    boolean foundLabel_2m = false;
+                                    for (markers.Marker markersRow : labelsList_2m) {
+
+                                        if (markersRow.getId_punktu().equals(markerLabel.getId_punktu())
+                                                && markersRow.getProperties().getMiasto().equals(markerLabel.getProperties().getMiasto())
+                                                && markersRow.getProperties().getUlica().equals(markerLabel.getProperties().getUlica())
+                                                && markersRow.getProperties().getStatus().equals(markerLabel.getProperties().getStatus())) {
+
+                                            foundLabel_2m = true;
+                                            markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
+                                        }
+                                    }
+
+                                    if (!foundLabel_2m) {
+                                        propertiesLabel.setIloscOdczytow(1);
+                                        String[] xxyyL = new String[2];
+                                        xxyyL = geocodeStreetOpegieka(propertiesLabel, userOpegieka, passOpegieka);
+                                        String xxL = xxyyL[0];
+                                        String yyL = xxyyL[1];
+                                        if (xxL.length() > 0 && yyL.length() > 0) {
+                                            Double latit = Double.parseDouble(yyL);
+                                            Double longit = Double.parseDouble(xxL);
+                                            coordinatesLabel.add(latit);
+                                            coordinatesLabel.add(longit);
+                                            geometryLabel.setCoordinates(coordinatesLabel);
+                                            geometryLabel.setType("Point");
+                                            markerLabel.setGeometry(geometryLabel);
+                                            labelsList_2m.add(markerLabel);
+                                        }
+                                    }
+                                    break;
 
                             }
-
-                        }
-
-                        if (!found) {
-
-                            properties.setIloscOdczytow(1);
-                            markersList.add(marker);
-
-                        }
-
-                        boolean foundLabel = false;
-                        for (markers.Marker markersRow : labelsList) {
-
-                            if (markersRow.getId_punktu().equals(markerLabel.getId_punktu())
-                                    && markersRow.getProperties().getMiasto().equals(markerLabel.getProperties().getMiasto())
-                                    && markersRow.getProperties().getUlica().equals(markerLabel.getProperties().getUlica())
-                                    && markersRow.getProperties().getStatus().equals(markerLabel.getProperties().getStatus())) {
-
-                                foundLabel = true;
-
-                                markersRow.getProperties().setIloscOdczytow(markersRow.getProperties().getIloscOdczytow() + 1);
-                            }
-
-                        }
-
-                        if (!foundLabel) {
-
-                            propertiesLabel.setIloscOdczytow(1);
-
-                            String[] xxyyL = new String[2];
-
-
-                            xxyyL = geocodeStreetOpegieka(propertiesLabel, userOpegieka, passOpegieka);
-
-
-                            String xxL = xxyyL[0];
-                            String yyL = xxyyL[1];
-
-                            if (xxL.length() > 0 && yyL.length() > 0) {
-                                Double latit = Double.parseDouble(yyL);
-                                Double longit = Double.parseDouble(xxL);
-
-                                coordinatesLabel.add(latit);
-                                coordinatesLabel.add(longit);
-                                geometryLabel.setCoordinates(coordinatesLabel);
-                                geometryLabel.setType("Point");
-                                markerLabel.setGeometry(geometryLabel);
-
-                                labelsList.add(markerLabel);
-                            }
-
+                        } else {
+                            markersList_errors.add(marker);
                         }
 
                         counter++;
@@ -338,12 +434,12 @@ public class ExportService extends Service<Void> {
                     }
 
 
-                    emarkersLabels.setMarkers(labelsList);
-                    emarkersMarkers.setMarkers(markersList);
-
-                    Gson gson = new Gson();
-                    String listaLabelsString = gson.toJson(emarkersLabels);
-                    String listaMarkersString = gson.toJson(emarkersMarkers);
+//                    emarkersLabels.setMarkers(labelsList);
+//                    emarkersMarkers.setMarkers(markersList);
+//
+//                    Gson gson = new Gson();
+//                    String listaLabelsString = gson.toJson(emarkersLabels);
+//                    String listaMarkersString = gson.toJson(emarkersMarkers);
 
 
                 } catch (Exception e) {
@@ -361,7 +457,7 @@ public class ExportService extends Service<Void> {
 
                     Platform.runLater(
                             () -> {
-                                setCurrentWork("4 z 4: generowanie plikow KML...");
+                                setCurrentWork("3 z 3: generowanie plikow KML...");
                             }
                     );
 
@@ -386,11 +482,19 @@ public class ExportService extends Service<Void> {
 //                    }
 //                    mainFilesPath = dirMain2.toString() + "\\" + fName;
 
-                    String filename = dirMain.toString() + "\\" + fName + "__1.kml";
+                    String filename = dirMain.toString() + "\\12m_" + fName + "__1.kml";
 
 
-                    List<markers.Marker> labelsListTEMP = labelsList.stream().collect(Collectors.toList());
-                    List<markers.Marker> markersListTEMP = markersList.stream().collect(Collectors.toList());
+                    List<markers.Marker> labelsListTemp_12m = labelsList_12m.stream().collect(Collectors.toList());
+                    List<markers.Marker> markersListTemp_12m = markersList_12m.stream().collect(Collectors.toList());
+
+                    List<markers.Marker> labelsListTemp_6m = labelsList_6m.stream().collect(Collectors.toList());
+                    List<markers.Marker> markersListTemp_6m = markersList_6m.stream().collect(Collectors.toList());
+
+                    List<markers.Marker> labelsListTemp_2m = labelsList_2m.stream().collect(Collectors.toList());
+                    List<markers.Marker> markersListTemp_2m = markersList_2m.stream().collect(Collectors.toList());
+
+                    List<markers.Marker> markersListTemp_errors = markersList_errors.stream().collect(Collectors.toList());
 
                     Calendar currentCalendar = Calendar.getInstance();
                     String year = Integer.toString(currentCalendar.get(Calendar.YEAR));
@@ -403,128 +507,316 @@ public class ExportService extends Service<Void> {
                     }
 
 
-                    Double sizes = (double) (markersListTEMP.size() + labelsListTEMP.size());
+//                    Double sizes = (double) (markersListTemp_12m.size() + labelsListTemp_12m.size());
+//
+//                    Integer maxMarkers = 1500;
+//                    Double sizesDz = sizes / maxMarkers;
+//                    Double mL = Math.ceil(sizesDz);
+//
+//                    Integer nuberOfFiles = mL.intValue();
 
-                    Integer maxMarkers = 1500;
-                    Double sizesDz = sizes / maxMarkers;
-                    Double mL = Math.ceil(sizesDz);
-
-                    Integer nuberOfFiles = mL.intValue();
-
-                    System.out.println("Markerow: " + sizes + ",  plikow: " + nuberOfFiles + "(kontrolnie:  przed: " + labelsList.size() + "," + markersList.size() + " , po: "
-                            + labelsListTEMP.size() + ", " + markersListTEMP.size() + ")");
+//                    System.out.println("Markerow: " + sizes + ",  plikow: " + nuberOfFiles + "(kontrolnie:  przed: " + labelsList.size() + "," + markersList.size() + " , po: "
+//                            + labelsListTEMP.size() + ", " + markersListTEMP.size() + ")");
 
                     Integer licznikM;
-                    for (int fileNr = 1; fileNr <= nuberOfFiles; fileNr++) {
-                        licznikM = 0;
-                        // System.out.println(fileNr);
-                        String nazwaPliku = "PUNKTY_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
+
+//                    for (int fileNr = 1; fileNr <= nuberOfFiles; fileNr++) {
+                    licznikM = 0;
+                    // System.out.println(fileNr);
+//                        String nazwaPliku_12m = "12m_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
+//                        String nazwaPliku_6m = "6m_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
+//                        String nazwaPliku_2m = "2m_" + RandomStringUtils.randomAlphanumeric(4).toUpperCase() + "_nr_" + fileNr;
+
+                    String nazwaPliku_12m = "12m_" + fName;
+                    String nazwaPliku_6m = "6m_" + fName;
+                    String nazwaPliku_2m = "2m_" + fName;
+                    String nazwaPliku_errors = "Errors_" + fName;
 
 
+                    String destination_12m = dirYear + "\\" + nazwaPliku_12m + ".kml";
+                    String destination_6m = dirYear + "\\" + nazwaPliku_6m + ".kml";
+                    String destination_2m = dirYear + "\\" + nazwaPliku_2m + ".kml";
+                    String destination_errors = dirYear + "\\" + nazwaPliku_errors + ".kml";
 
-                        String destination = dirYear + "\\" + nazwaPliku + ".kml";
+                    String nazwaWarstwy_12m = "12m";
+                    String nazwaWarstwy_6m = "6m";
+                    String nazwaWarstwy_2m = "2m";
+                    String nazwaWarstwy_errors = "errors";
 
-                        String nazwaWarstwy = "m121111111111111111111111111111111111";
+                    Kml kml_12m = KmlFactory.createKml();
+                    Kml kml_6m = KmlFactory.createKml();
+                    Kml kml_2m = KmlFactory.createKml();
+                    Kml kml_errors = KmlFactory.createKml();
+                    Document doc_12m = kml_12m.createAndSetDocument().withName("WARSTWY").withOpen(true);
+                    Document doc_6m = kml_6m.createAndSetDocument().withName("WARSTWY").withOpen(true);
+                    Document doc_2m = kml_2m.createAndSetDocument().withName("WARSTWY").withOpen(true);
+                    Document doc_errors = kml_errors.createAndSetDocument().withName("WARSTWY").withOpen(true);
 
-                        Kml kml = KmlFactory.createKml();
-                        Document doc = kml.createAndSetDocument().withName("WARSTWY").withOpen(true);
+                    // create a Folder
 
-                        // create a Folder
+                    Folder folderImport_12m = doc_12m.createAndAddFolder();
+                    Folder folderImport_6m = doc_6m.createAndAddFolder();
+                    Folder folderImport_2m = doc_2m.createAndAddFolder();
+                    Folder folderImport_errors = doc_errors.createAndAddFolder();
 
-                        Folder folderImport = doc.createAndAddFolder();
-                        folderImport.withName(nazwaPliku).withOpen(true);
+                    folderImport_12m.withName(nazwaPliku_12m).withOpen(true);
+                    folderImport_6m.withName(nazwaPliku_6m).withOpen(true);
+                    folderImport_2m.withName(nazwaPliku_2m).withOpen(true);
+                    folderImport_errors.withName(nazwaPliku_errors).withOpen(true);
 
-                        String nazwaWarstwyLabels = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - ulice (" + fileNr + "/" + nuberOfFiles + ")";
-                        Folder folderLabels = folderImport.createAndAddFolder();
-                        folderLabels.withName(nazwaWarstwyLabels).withOpen(true);
+//                        String nazwaWarstwyLabels_12m = nazwaWarstwy_12m.trim().substring(0, nazwaWarstwy_12m.length() - 4) + " - ulice (" + fileNr + "/" + nuberOfFiles + ")";
 
-                        String nazwaWarstwyMarkers = nazwaWarstwy.trim().substring(0, nazwaWarstwy.length() - 4) + " - domy (" + fileNr + "/" + nuberOfFiles + ")";
-                        Folder folderMarkers = folderImport.createAndAddFolder();
-                        folderMarkers.withName(nazwaWarstwyMarkers).withOpen(true);
+                    Folder folderLabels_12m = folderImport_12m.createAndAddFolder();
+                    Folder folderLabels_6m = folderImport_6m.createAndAddFolder();
+                    Folder folderLabels_2m = folderImport_2m.createAndAddFolder();
+
+                    folderLabels_12m.withName(nazwaWarstwy_12m + " ULICE").withOpen(true);
+                    folderLabels_6m.withName(nazwaWarstwy_6m + " ULICE").withOpen(true);
+                    folderLabels_2m.withName(nazwaWarstwy_2m + " ULICE").withOpen(true);
+
+//                        String nazwaWarstwyMarkers_12m = nazwaWarstwy_12m.trim().substring(0, nazwaWarstwy_12m.length() - 4) + " - domy (" + fileNr + "/" + nuberOfFiles + ")";
+                    Folder folderMarkers_12m = folderImport_12m.createAndAddFolder();
+                    Folder folderMarkers_6m = folderImport_6m.createAndAddFolder();
+                    Folder folderMarkers_2m = folderImport_2m.createAndAddFolder();
+                    Folder folderMarkers_errors = folderImport_errors.createAndAddFolder();
+
+                    folderMarkers_12m.withName(nazwaWarstwy_12m + " DOMY").withOpen(true);
+                    folderMarkers_6m.withName(nazwaWarstwy_6m + " DOMY").withOpen(true);
+                    folderMarkers_2m.withName(nazwaWarstwy_2m + " DOMY").withOpen(true);
+                    folderMarkers_errors.withName(nazwaWarstwy_errors).withOpen(true);
+
+//                    System.out.println("Rozmiary: " + markersList_12m.size() + ", " + markersList_6m.size() + ", " + markersList_2m.size());
 
 
-                        Iterator<markers.Marker> iterL = labelsListTEMP.iterator();
-                        while (iterL.hasNext()) {
-                            licznikM++;
-                            // System.out.println(licznikM);
+                    Iterator<markers.Marker> iterL = labelsListTemp_12m.iterator();
+                    while (iterL.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
 
-                            markers.Marker markersRow = iterL.next();
+                        markers.Marker markersRow = iterL.next();
 
-                            double longitude;
-                            double latitude;
-                            String markerLabel;
-                            String miasto;
-                            String iloscOdczytow;
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
 
-                            longitude = markersRow.getGeometry().getCoordinates().get(1);
-                            latitude = markersRow.getGeometry().getCoordinates().get(0);
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
 
-                            miasto = markersRow.getProperties().getMiasto();
-                            markerLabel = "ul. " + markersRow.getProperties().getUlica();
-                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
 
-                            createStreet(doc, folderLabels, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+                        createStreet(doc_12m, folderLabels_12m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
 
-                            iterL.remove();
+                        iterL.remove();
 
-                            if (licznikM == maxMarkers) {
-                                break;
-                            }
-                        }
-
-                        Iterator<markers.Marker> iterM = markersListTEMP.iterator();
-                        while (iterM.hasNext()) {
-                            licznikM++;
-                            // System.out.println(licznikM);
-                            markers.Marker markersRow = iterM.next();
-
-                            double longitude;
-                            double latitude;
-                            String markerLabel;
-                            String miasto;
-                            String iloscOdczytow;
-                            String iloscWykonanych;
-
-                            longitude = markersRow.getGeometry().getCoordinates().get(1);
-                            latitude = markersRow.getGeometry().getCoordinates().get(0);
-
-                            miasto = markersRow.getProperties().getMiasto();
-                            markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
-                            iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
-
-                            createPlacemark(doc, folderMarkers, longitude, latitude, miasto, markerLabel, iloscOdczytow);
-
-                            iterM.remove();
-
-                            if (licznikM == maxMarkers) {
-                                break;
-                            }
-                        }
-
-                        // marshals to console
-                        // kml.marshal();
-
-                        // print and save
-                        try {
-                            Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
-                            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
-                                @Override
-                                public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
-                                    return namespaceUri.matches("http://www.w3.org/\\d{4}/Atom") ? "atom"
-                                            : (namespaceUri.matches("urn:oasis:names:tc:ciq:xsdschema:xAL:.*?") ? "xal"
-                                            : (namespaceUri.matches("http://www.google.com/kml/ext/.*?") ? "gx" : (namespaceUri.matches("http://www.opengis.net/kml/.*?") ? "" : (null))));
-                                }
-                            });
-                            File file = new File(destination);
-                            marshaller.marshal(kml, file);
-                            // kml.marshal();
-                        } catch (JAXBException e) {
-
-                            e.printStackTrace();
-                        }
-
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
                     }
+
+                    Iterator<markers.Marker> iterM = markersListTemp_12m.iterator();
+                    while (iterM.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+                        markers.Marker markersRow = iterM.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                        createPlacemark(doc_12m, folderMarkers_12m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterM.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    iterL = labelsListTemp_6m.iterator();
+                    while (iterL.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+
+                        markers.Marker markersRow = iterL.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                        createStreet(doc_6m, folderLabels_6m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterL.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    iterM = markersListTemp_6m.iterator();
+                    while (iterM.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+                        markers.Marker markersRow = iterM.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                        createPlacemark(doc_6m, folderMarkers_6m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterM.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    iterL = labelsListTemp_2m.iterator();
+                    while (iterL.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+
+                        markers.Marker markersRow = iterL.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                        createStreet(doc_2m, folderLabels_2m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterL.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    iterM = markersListTemp_2m.iterator();
+                    while (iterM.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+                        markers.Marker markersRow = iterM.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
+                        iloscOdczytow = markersRow.getProperties().getIloscOdczytow().toString();
+
+                        createPlacemark(doc_2m, folderMarkers_2m, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterM.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    iterM = markersListTemp_errors.iterator();
+                    while (iterM.hasNext()) {
+                        licznikM++;
+                        // System.out.println(licznikM);
+                        markers.Marker markersRow = iterM.next();
+
+                        double longitude;
+                        double latitude;
+                        String markerLabel;
+                        String miasto;
+                        String iloscOdczytow;
+
+                        longitude = markersRow.getGeometry().getCoordinates().get(1);
+                        latitude = markersRow.getGeometry().getCoordinates().get(0);
+
+                        miasto = markersRow.getProperties().getMiasto();
+                        markerLabel = "ul. " + markersRow.getProperties().getUlica() + " " + markersRow.getProperties().getNumerDomu();
+                        iloscOdczytow = "error";
+
+                        createPlacemark(doc_errors, folderMarkers_errors, longitude, latitude, miasto, markerLabel, iloscOdczytow);
+
+                        iterM.remove();
+
+//                        if (licznikM == maxMarkers) {
+//                            break;
+//                        }
+                    }
+
+                    // marshals to console
+                    // kml.marshal();
+
+                    // print and save
+                    try {
+                        Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
+                        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
+                            @Override
+                            public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+                                return namespaceUri.matches("http://www.w3.org/\\d{4}/Atom") ? "atom"
+                                        : (namespaceUri.matches("urn:oasis:names:tc:ciq:xsdschema:xAL:.*?") ? "xal"
+                                        : (namespaceUri.matches("http://www.google.com/kml/ext/.*?") ? "gx" : (namespaceUri.matches("http://www.opengis.net/kml/.*?") ? "" : (null))));
+                            }
+                        });
+                        File file_12m = new File(destination_12m);
+                        File file_6m = new File(destination_6m);
+                        File file_2m = new File(destination_2m);
+                        File file_errors = new File(destination_errors);
+                        marshaller.marshal(kml_12m, file_12m);
+                        marshaller.marshal(kml_6m, file_6m);
+                        marshaller.marshal(kml_2m, file_2m);
+                        marshaller.marshal(kml_errors, file_errors);
+                        // kml.marshal();
+                    } catch (JAXBException e) {
+
+                        e.printStackTrace();
+                    }
+
+//                    }
 
                     tEnd = System.currentTimeMillis();
 
@@ -538,7 +830,7 @@ public class ExportService extends Service<Void> {
 
                             long tDelta = tEnd - tStart;
                             double elapsedSeconds = tDelta / 1000.0;
-                            System.out.println("ENERGO System: >>> Eksport poprawny w czasie:  " + elapsedSeconds);
+//                            System.out.println("ENERGO System: >>> Eksport poprawny w czasie:  " + elapsedSeconds);
 //                            toastStage = (Stage) spinner.getScene().getWindow();
 //                            SucssesToast("Wyeksportowano", "ilosc plikow: " + nuberOfFiles);
 //                            spinner.setVisible(false);
@@ -648,7 +940,7 @@ public class ExportService extends Service<Void> {
 
             xxyy[0] = xx;
             xxyy[1] = yy;
-            System.out.println("XXYY  >>>>>>>>>>>>" + xx + "," + yy);
+//            System.out.println("XXYY  >>>>>>>>>>>>" + xx + "," + yy);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -777,18 +1069,18 @@ public class ExportService extends Service<Void> {
 
     private static void createPlacemark(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow) {
 
-        Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
-        Style style = document.createAndAddStyle();
-        style.withId("style_" + markerName) // set the stylename to use this style from the placemark
-                .createAndSetIconStyle().withScale(5.0).withIcon(icon); // set size and icon
-        style.createAndSetLabelStyle().withColor("ff43b3ff").withScale(5.0); // set color and size of the name
+//        Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
+//        Style style = document.createAndAddStyle();
+//        style.withId("style_" + markerName) // set the stylename to use this style from the placemark
+//                .createAndSetIconStyle().withScale(5.0).withIcon(icon); // set size and icon
+//        style.createAndSetLabelStyle().withColor("ff43b3ff").withScale(5.0); // set color and size of the name
 
         Placemark placemark = folder.createAndAddPlacemark();
         placemark.withName(markerName).withStyleUrl("#style_" + markerName)
                 // .withDescription("<![CDATA[<h1>" + markerName + "</h1>\r\n<p><font
                 // color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" +
                 // iloscWykonanych + "</font></p>")
-                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow)
+                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color='red'>odczyty: " + iloscOdczytow)
 
                 // coordinates and distance (zoom level) of the viewer
                 .createAndSetLookAt().withLongitude(longitude).withLatitude(latitude).withAltitude(0).withRange(12000000);
@@ -798,18 +1090,18 @@ public class ExportService extends Service<Void> {
 
     private static void createStreet(Document document, Folder folder, double longitude, double latitude, String miasto, String markerName, String iloscOdczytow) {
 
-        Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
-        Style style = document.createAndAddStyle();
-        style.withId("style_" + markerName) // set the stylename to use this style from the placemark
-                .createAndSetIconStyle().withScale(5.0).withIcon(icon); // set size and icon
-        style.createAndSetLabelStyle().withColor("ff43b3ff").withScale(5.0); // set color and size of the name
+//        Icon icon = new Icon().withHref("https://chart.googleapis.com/chart?chst=d_bubble_icon_text_big&chld=homegardenbusiness|bb|" + markerName + "|FFFFFF|000000");
+//        Style style = document.createAndAddStyle();
+//        style.withId("style_" + markerName) // set the stylename to use this style from the placemark
+//                .createAndSetIconStyle().withScale(5.0).withIcon(icon); // set size and icon
+//        style.createAndSetLabelStyle().withColor("ff43b3ff").withScale(5.0); // set color and size of the name
 
         Placemark placemark = folder.createAndAddPlacemark();
         placemark.withName(markerName).withStyleUrl("#style_" + markerName)
                 // .withDescription("<![CDATA[<h1>" + markerName + "</h1>\r\n<p><font
                 // color=\"red\">odczyty: " + iloscOdczytow + "\r\n<b>wykonane: </b>" +
                 // iloscWykonanych + "</font></p>")
-                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color=\"red\">odczyty: " + iloscOdczytow)
+                .withDescription("<![CDATA[<h1>" + miasto + "</h1><p><font color='red'>odczyty: " + iloscOdczytow)
 
                 // coordinates and distance (zoom level) of the viewer
                 .createAndSetLookAt().withLongitude(longitude).withLatitude(latitude).withAltitude(0).withRange(12000000);
