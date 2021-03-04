@@ -123,7 +123,6 @@ public class EnergoMapsController implements Initializable {
                 });
 
 
-
             });
             loadService.setOnFailed((WorkerStateEvent t) -> {
                 ErrorToast("Load error", "Wczytywanie przerwane.");
@@ -170,49 +169,50 @@ public class EnergoMapsController implements Initializable {
     protected void handleConvertButtonAction(ActionEvent actionEvent) {
         if (readyToExport) {
 
-                Window owner = convertButton.getScene().getWindow();
-                toastStage = (Stage) owner.getScene().getWindow();
-                openFolderButton.setVisible(false);
-                progressBar.setVisible(true);
-                workLabel.setVisible(true);
-                pathButton.setDisable(true);
-                convertButton.setDisable(true);
+            Window owner = convertButton.getScene().getWindow();
+            toastStage = (Stage) owner.getScene().getWindow();
+            openFolderButton.setVisible(false);
+            progressBar.setVisible(true);
+            workLabel.setVisible(true);
+            pathButton.setDisable(true);
+            convertButton.setDisable(true);
 
-                exportService = new ExportService();
-                exportService.setFile(file);
+            exportService = new ExportService();
+            exportService.setFile(file);
 //                exportService.setPointsCount(pointsCount);
-                exportService.setMax(pointsCount);
-                exportService.setOnSucceeded((WorkerStateEvent t) -> {
-                    stopButton.setVisible(false);
-                    openFolderButton.setVisible(true);
-                    convertButton.setDisable(false);
-                    pathButton.setDisable(false);
-                    taskSpinner.setVisible(false);
-                    SucssesToast("Converter info", "Punkty wyeksportowano poprawnie.");
-                });
-                exportService.setOnFailed((WorkerStateEvent t) -> {
-                    taskSpinner.setVisible(false);
-                    stopButton.setVisible(false);
-                    ErrorToast("Converter error", "Eksport przerwany.");
-                });
-                exportService.setOnCancelled((WorkerStateEvent t) -> {
-                    taskSpinner.setVisible(false);
-                    stopButton.setVisible(false);
-                    convertButton.setDisable(false);
-                    pathButton.setDisable(false);
-                    taskSpinner.setVisible(false);
-                    NoticeToast("Converter info", "Eksport anulowany.");
-                });
+            exportService.setToastStage(toastStage);
+            exportService.setMax(pointsCount);
+            exportService.setOnSucceeded((WorkerStateEvent t) -> {
+                stopButton.setVisible(false);
+                openFolderButton.setVisible(true);
+                convertButton.setDisable(false);
+                pathButton.setDisable(false);
+                taskSpinner.setVisible(false);
+                SucssesToast("Converter info", "Punkty wyeksportowano poprawnie.");
+            });
+            exportService.setOnFailed((WorkerStateEvent t) -> {
+                taskSpinner.setVisible(false);
+                stopButton.setVisible(false);
+                ErrorToast("Converter error", "ERROR: " + t.getSource().getValue());
+            });
+            exportService.setOnCancelled((WorkerStateEvent t) -> {
+                taskSpinner.setVisible(false);
+                stopButton.setVisible(false);
+                convertButton.setDisable(false);
+                pathButton.setDisable(false);
+                taskSpinner.setVisible(false);
+                NoticeToast("Converter info", "Eksport anulowany.");
+            });
 
-                exportService.setOnRunning((WorkerStateEvent t) -> {
-                    taskSpinner.setVisible(true);
-                    stopButton.setVisible(true);
-                });
+            exportService.setOnRunning((WorkerStateEvent t) -> {
+                taskSpinner.setVisible(true);
+                stopButton.setVisible(true);
+            });
 
-                progressBar.progressProperty().bind(exportService.progressProperty());
-                percentLabel.textProperty().bind(exportService.progressProperty().multiply(100).asString("%.2f %%"));
-                workLabel.textProperty().bind(exportService.currentWorkProperty());
-                exportService.start();
+            progressBar.progressProperty().bind(exportService.progressProperty());
+            percentLabel.textProperty().bind(exportService.progressProperty().multiply(100).asString("%.2f %%"));
+            workLabel.textProperty().bind(exportService.currentWorkProperty());
+            exportService.start();
 
         } else {
 
@@ -229,7 +229,6 @@ public class EnergoMapsController implements Initializable {
         Desktop.getDesktop().open(dirMain);
 
     }
-
 
 
 //    private void countBytes() {
@@ -438,18 +437,18 @@ public class EnergoMapsController implements Initializable {
         };
 
         pointsCountLabel.textProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue.equals("0") || newValue.equals("")) {
-                    Platform.runLater(() -> {
+            if (newValue.equals("0") || newValue.equals("")) {
+                Platform.runLater(() -> {
 
-                        convertButton.setDisable(true);
-                    });
-                }
-                if (!newValue.isEmpty() && !newValue.equals("0")) {
-                    Platform.runLater(() -> {
-                        convertButton.setDisable(false);
-                    });
+                    convertButton.setDisable(true);
+                });
+            }
+            if (!newValue.isEmpty() && !newValue.equals("0")) {
+                Platform.runLater(() -> {
+                    convertButton.setDisable(false);
+                });
 
-                }
+            }
         });
 
 

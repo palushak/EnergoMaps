@@ -25,7 +25,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir=O:\PROJECTS\EnergoMaps\build\launch4j
-OutputBaseFilename=EnergoDESKSetup
+OutputBaseFilename=EnergoMapsSetup
 SetupIconFile=O:\PROJECTS\EnergoMaps\icon\icon.ico
 Compression=lzma
 SolidCompression=yes

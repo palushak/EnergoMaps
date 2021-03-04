@@ -17,21 +17,34 @@ import com.google.maps.model.GeocodingResult;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import de.micromata.opengis.kml.v_2_2_0.Document;
 import de.micromata.opengis.kml.v_2_2_0.Folder;
-import de.micromata.opengis.kml.v_2_2_0.Icon;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import de.micromata.opengis.kml.v_2_2_0.KmlFactory;
 import de.micromata.opengis.kml.v_2_2_0.Placemark;
-import de.micromata.opengis.kml.v_2_2_0.Style;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import markers.EMarkers;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.geometry.VPos;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 import markers.Properties;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.bind.JAXBContext;
@@ -61,6 +74,8 @@ public class ExportService extends Service<Void> {
     int iloscMiast = 0;
     int iloscUlic = 0;
     int iloscDomow = 0;
+
+    private static Stage toastStage;
 
 
     @Override
@@ -129,7 +144,9 @@ public class ExportService extends Service<Void> {
 
 
                 } catch (Exception e) {
+//                    ErrorToast("ERROR:", e.toString());
                     e.printStackTrace();
+
                 }
 
 //                EMarkers emarkersLabels = new EMarkers();
@@ -444,6 +461,7 @@ public class ExportService extends Service<Void> {
 
                 } catch (Exception e) {
                     e.printStackTrace();
+//                    ErrorToast("ERROR:", e.toString());
                 }
 
 
@@ -812,7 +830,7 @@ public class ExportService extends Service<Void> {
                         marshaller.marshal(kml_errors, file_errors);
                         // kml.marshal();
                     } catch (JAXBException e) {
-
+//                        ErrorToast("ERROR:", e.toString());
                         e.printStackTrace();
                     }
 
@@ -822,6 +840,7 @@ public class ExportService extends Service<Void> {
 
                 } catch (Exception e) {
                     e.printStackTrace();
+//                    ErrorToast("ERROR:", e.toString());
                 } finally {
 
                     Platform.runLater(new Runnable() {
@@ -911,6 +930,7 @@ public class ExportService extends Service<Void> {
                 }
             } catch (Exception e) {
                 System.err.println("ERROR RESPONSE  >>>>>>>>>>>>" + response);
+//                ErrorToast("ERROR:", e.toString());
                 e.printStackTrace();
             } finally {
                 if (response != null) {
@@ -942,6 +962,7 @@ public class ExportService extends Service<Void> {
             xxyy[1] = yy;
 //            System.out.println("XXYY  >>>>>>>>>>>>" + xx + "," + yy);
         } catch (IOException e) {
+//            ErrorToast("ERROR:", e.toString());
             e.printStackTrace();
         }
         return xxyy;
@@ -1008,6 +1029,7 @@ public class ExportService extends Service<Void> {
                 }
             } catch (Exception e) {
 //						Systemsystem.err.println("ERROR RESPONSE  >>>>>>>>>>>>" + response);
+//                ErrorToast("ERROR:", e.toString());
                 e.printStackTrace();
             } finally {
                 if (response != null) {
@@ -1039,6 +1061,7 @@ public class ExportService extends Service<Void> {
             xxyy[1] = yy;
 
         } catch (IOException e) {
+//            ErrorToast("ERROR:", e.toString());
             e.printStackTrace();
         }
         return xxyy;
@@ -1059,6 +1082,7 @@ public class ExportService extends Service<Void> {
             yy = results[0].geometry.location.lat;
 
         } catch (Exception e) {
+//            ErrorToast("ERROR:", e.toString());
             e.printStackTrace();
         }
 
@@ -1137,8 +1161,10 @@ public class ExportService extends Service<Void> {
     }
 
     public static double round(double value, int places) {
-        if (places < 0)
+        if (places < 0) {
+//            ErrorToast("ERROR:", "IllegalArgument exception");
             throw new IllegalArgumentException();
+        }
 
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
@@ -1210,4 +1236,98 @@ public class ExportService extends Service<Void> {
     public void setListOdczyty(ObservableList<RowPlikCSV_Map> listOdczyty) {
         this.listOdczyty = listOdczyty;
     }
+
+    public static Stage getToastStage() {
+        return toastStage;
+    }
+
+    public void setToastStage(Stage toastStage) {
+        this.toastStage = toastStage;
+    }
+
+
+    static public Tooltip NoticeToast(String Title, String Txt) {
+        return JToast(Title, Txt, "rgba(255,255,255,0.8)", "#222", Duration.seconds(7));
+    }
+
+    static public Tooltip SucssesToast(String Title, String Txt) {
+        return JToast(Title, Txt, "rgba(15, 157, 88, 0.8)", "#222", Duration.seconds(7));
+    }
+
+    static public Tooltip ErrorToast(String Title, String Txt) {
+        return JToast(Title, Txt, "rgba(255, 25, 36, 0.8)", "#fff", Duration.seconds(15));
+    }
+
+    public static Tooltip JToast(String Title, String Text, String BackgroundColor, String Color, Duration duration) {
+        Tooltip S = new Tooltip();
+        Label X = new Label("X");
+        X.setId("Close");
+        X.setOnMouseClicked(value -> {
+            S.hide();
+        });
+
+        Label Content = new Label(Text);
+        Content.setAlignment(Pos.TOP_RIGHT);
+        Content.setTextAlignment(TextAlignment.RIGHT);
+        Content.setWrapText(true);
+        Content.setId("Content");
+
+        double MaxWidth = 800;
+        Content.setMaxWidth(MaxWidth);
+
+        Label TitleLable = new Label(Title);
+        TitleLable.setAlignment(Pos.TOP_RIGHT);
+        Content.setStyle("-fx-text-fill:" + Color);
+        TitleLable.setStyle("-fx-text-fill:" + Color);
+
+        GridPane GB = new GridPane();
+        double Width = 0;
+        if (Content.getText() != null) {
+            Width = 150 + Content.getText().length() / 2.5;
+        }
+        if (Width > MaxWidth) {
+            Width = MaxWidth;
+        }
+        double height = Content.getPrefHeight();
+
+        GB.getColumnConstraints().setAll(new ColumnConstraints(30, 30, 30, Priority.NEVER, HPos.LEFT, true), new ColumnConstraints(Width, Width, MaxWidth, Priority.ALWAYS, HPos.RIGHT, true));
+
+        GB.getRowConstraints().setAll(new RowConstraints(30, 30, 30), new RowConstraints(height, height, 750, Priority.ALWAYS, VPos.CENTER, true));
+        GB.setId("msgtipbox");
+        GB.setStyle("-fx-background-color:" + BackgroundColor);
+        GB.setVgap(10);
+        GB.setHgap(10);
+        GB.add(X, 0, 0);
+        GB.add(TitleLable, 1, 0);
+        GB.add(Content, 0, 1, 2, 1);
+        GridPane.setVgrow(Content, Priority.ALWAYS);
+        GridPane.setHgrow(Content, Priority.ALWAYS);
+        S.setGraphic(GB);
+        S.setId("msg-tip");
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double y = screenBounds.getMinY() + screenBounds.getHeight();
+        S.show(getToastStage(), 0, y);
+
+        ////// Show and Hide
+        ////// Still showing in Hover Support
+        SimpleBooleanProperty HoveProperty = new SimpleBooleanProperty(false);
+        GB.setOnMouseEntered(v -> HoveProperty.set(true));
+        GB.setOnMouseExited(v -> HoveProperty.set(false));
+        PauseTransition wait = new PauseTransition(duration);
+        wait.setOnFinished((e) -> {
+            if (HoveProperty.get()) {
+                wait.play();
+            } else {
+                S.hide();
+            }
+        });
+        wait.play();
+
+        HoveProperty.addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            wait.playFromStart();
+        });
+        return S;
+    }
+
+
 }

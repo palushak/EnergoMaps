@@ -31,7 +31,6 @@ dependencies {
     compile group: 'com.google.maps', name: 'google-maps-services', version: '0.17.0'
     compile group: 'com.google.http-client', name: 'google-http-client', version: '1.39.0'
     compile group: 'com.google.http-client', name: 'google-http-client-jackson2', version: '1.39.0'
-//    compile group: 'org.kordamp.bootstrapfx', name: 'bootstrapfx-core', version: '0.2.4'
 }
 
 launch4j {
