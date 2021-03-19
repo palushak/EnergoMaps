@@ -812,6 +812,7 @@ public class ExportService extends Service<Void> {
                     try {
                         Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                        marshaller.setProperty(Marshaller.JAXB_ENCODING, "utf-8");
                         marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper() {
                             @Override
                             public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
