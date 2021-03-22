@@ -807,8 +807,8 @@ public class ExportService extends Service<Void> {
 
                     // marshals to console
                     // kml.marshal();
-
                     // print and save
+
                     try {
                         Marshaller marshaller = JAXBContext.newInstance(new Class[]{Kml.class}).createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
